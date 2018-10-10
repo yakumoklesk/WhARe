@@ -43,7 +43,7 @@ namespace GoogleARCore.Examples.AugmentedImage
         /// <summary>
         /// A prefab for visualizing an AugmentedImage.
         /// </summary>
-        public List<AugmentedImageVisualizer> prefabs = new List<AugmentedImageVisualizer>();
+        public List<AugmentedImageVisualizer> paths = new List<AugmentedImageVisualizer>();
 
         /// <summary>
         /// The overlay containing the fit to scan user guide.
@@ -62,9 +62,9 @@ namespace GoogleARCore.Examples.AugmentedImage
 
         private List<Anchor> m_anchors = new List<Anchor>();
 
-        public void Start() {
+        public void Start()
+        {
             sessionConfig.AugmentedImageDatabase = imageDatabase;
-
         }
 
 
@@ -89,8 +89,12 @@ namespace GoogleARCore.Examples.AugmentedImage
             // Get updated augmented images for this frame.
             Session.GetTrackables<AugmentedImage>(m_TempAugmentedImages, TrackableQueryFilter.Updated);
             imageCount.text = "Images: " + m_TempAugmentedImages.Count;
-            if(planeGenerator != null) //may be null due to known issue: after resetting ARCore session, Plane Generator stops working, so we set it to null and only use it the first time.
+            
+            // May be null due to known issue: after resetting ARCore session, Plane Generator stops working, so we set it to null and only use it the first time.
+            if( planeGenerator != null )
+            {
                planeGenerator.SendMessage("ChangeShader", occlusionShader);
+            }
 
             // Create visualizers and anchors for updated augmented images that are tracking and do not previously
             // have a visualizer. Remove visualizers for stopped images.
@@ -98,13 +102,13 @@ namespace GoogleARCore.Examples.AugmentedImage
             {
                 AugmentedImageVisualizer visualizer = null;
                 m_Visualizers.TryGetValue(image.DatabaseIndex, out visualizer);
-                if (image.TrackingState == TrackingState.Tracking && visualizer == null)
+                if( image.TrackingState == TrackingState.Tracking && visualizer == null )
                 {
                     // Create an anchor to ensure that ARCore keeps tracking this augmented image.
                     Anchor anchor = image.CreateAnchor(image.CenterPose);
                     m_anchors.Add(anchor);
 
-                    visualizer = (AugmentedImageVisualizer)Instantiate(prefabs[image.DatabaseIndex], anchor.transform);
+                    visualizer = (AugmentedImageVisualizer)Instantiate(paths[image.DatabaseIndex], anchor.transform);
                     visualizer.gameObject.SetActive(true);
                     visualizer.Image = image;
                     m_Visualizers.Add(image.DatabaseIndex, visualizer);
@@ -130,10 +134,11 @@ namespace GoogleARCore.Examples.AugmentedImage
             FitToScanOverlay.SetActive(true);
             resetButton.gameObject.SetActive(false);
 
-            if(planeGenerator != null)  
+            if( planeGenerator != null )
+            {
                 planeGenerator.SendMessage("ChangeShader",planeFindingShader);
+            }
         }
-
 
         public void ResetButtonClicked()
         {
